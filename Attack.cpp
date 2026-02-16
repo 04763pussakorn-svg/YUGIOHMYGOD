@@ -52,7 +52,7 @@ void DuelMonster::declareAttack(DuelMonster *target) {
 void DuelMonster::battleCalculation(int opp_power) {
     int damage = opp_power - power;
 
-    if(damage < 0)  cout << ">> '" << name << "' is destroyed and sent to the Graveyard!\n";
+    if(damage < 0)  cout << ">> '" << name << "' is destroyed and sent to the Graveyard!\n";//not work
 }
 
 int main() {
