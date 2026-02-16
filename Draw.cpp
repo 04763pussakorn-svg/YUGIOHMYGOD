@@ -6,7 +6,7 @@
 using namespace std;
 
 struct Card {
-    string  cn;
+    string cn;
     int atk;
     int def;
 };
