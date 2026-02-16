@@ -6,10 +6,9 @@
 using namespace std;
 
 struct Card {
-    // string 
-    int cn;
-    // int atk;
-    // int def;
+    string  cn;
+    int atk;
+    int def;
 };
 
 Card draw(vector<Card> &deck){
@@ -21,14 +20,14 @@ Card draw(vector<Card> &deck){
 
 int main(){
     srand(time(0));
-    vector<Card> whatdahell = {{1},{2},{3},{5},{10},{9},{6},{7},{8}};
-    for(int i = 0; i < 5; i++){
+    vector<Card> whatdahell = {{"JohnCena",890,460},{"Conan",350,20},{"Jesus",777,888},{"Dr.KArn",999,999},{"GodUsoff",578,0}};
+    for(int i = 0; i < 2; i++){
         Card mons = draw(whatdahell);
-        cout << mons.cn << " ";
+        cout << "[ " << mons.cn << "," << mons.atk << "," << mons.def <<  " ] " ;
     }
     cout << "\n";
     for (int i = 0; i < whatdahell.size(); i++) {
-        cout << whatdahell[i].cn << " ";
+        cout << "[ " << whatdahell[i].cn << "," << whatdahell[i].atk << "," << whatdahell[i].def << "] ";
     }
     return 0;
 }
