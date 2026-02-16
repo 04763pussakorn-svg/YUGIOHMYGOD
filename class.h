@@ -37,19 +37,16 @@ public:
     }
 };
 
-
-
-    Card C[10];
-
-   Card C[0] = Card("Beaver Warrior", "Monster", 4, 1200, 1500, "A beaver that is skilled in combat.");
-   Card C[1] = Card("Celtic Guardian", "Monster", 4, 1400, 1200, "A warrior with a Celtic sword and shield.");
-   Card C[2] = Card("Curse of Dragon", "Monster", 5, 2000, 1500, "A dragon that is said to be cursed.");
-   Card C[3] = Card("Dark Magician", "Monster", 7, 2500, 2100, "The ultimate wizard.");
-   Card C[4] = Card("Feral Imp", "Monster", 4, 1300, 1400, "A mischievous imp.");
-   Card C[5] = Card("Gaia The Fierce Knight", "Monster", 7, 2300, 2100, "A fierce knight.");
-   Card C[6] = Card("Giant Soldier of Stone", "Monster", 3, 1300, 2000, "A stone giant.");
-   Card C[7] = Card("Griffore", "Monster", 4, 1600, 1000, "A swift griffin.");
-   Card C[8] = Card("Pot of Greed", "Spell", 0, 0, 0, "Draw 2 cards.");
-   Card C[9] = Card("Mirror Force", "Trap", 0, 0, 0, "Destroy all attack position monsters your opponent controls.");
+Card All_Card[10] ={
+    Card("Beaver Warrior", "Monster", 4, 1200, 1500, "A beaver that is skilled in combat."),
+    Card("Celtic Guardian", "Monster", 4, 1400, 1200, "A warrior with a Celtic sword and shield."),
+    Card("Curse of Dragon", "Monster", 5, 2000, 1500, "A dragon that is said to be cursed."),
+    Card("Dark Magician", "Monster", 7, 2500, 2100, "The ultimate wizard."),
+    Card("Feral Imp", "Monster", 4, 1300, 1400, "A mischievous imp."),
+    Card("Gaia The Fierce Knight", "Monster", 7, 2300, 2100, "A fierce knight."),
+    Card("Giant Soldier of Stone", "Monster", 3, 1300, 2000, "A stone giant."),
+    Card("Griffore", "Monster", 4, 1600, 1000, "A swift griffin."),
+    Card("Pot of Greed", "Spell", 0, 0, 0, "Draw 2 cards."),
+    Card("Mirror Force", "Trap", 0, 0, 0, "Destroy all attack position monsters your opponent controls.")
    
-
+};
