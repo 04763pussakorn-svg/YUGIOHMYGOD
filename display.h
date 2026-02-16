@@ -11,11 +11,6 @@
 //  ___________________________________________________
 
 
-#include <iostream>  
-#include <Windows.h>  
-#include <sstream>
-#include <iomanip> 
-
 using namespace std;
  
 // ANSI codes
@@ -58,6 +53,7 @@ void updateScreen();
 
 void sl(){
     cout << setw(screen_pad) << right << "|";
+
 }
 void sr(){
     cout << setw(table_padding_left+1) << right << "|" << endl;
