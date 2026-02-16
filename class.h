@@ -51,4 +51,5 @@ int main() {
     C[8] = Card("Pot of Greed", "Spell", 0, 0, 0, "Draw 2 cards.");
     C[9] = Card("Mirror Force", "Trap", 0, 0, 0, "Destroy all attack position monsters your opponent controls.");
    
+
 }
