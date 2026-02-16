@@ -1,3 +1,7 @@
+#ifndef CLASS_H
+#define CLASS_H
+
+
 #include <iostream>
 #include <string>
 #include <algorithm>
@@ -50,3 +54,4 @@ Card All_Card[10] ={
     Card("Mirror Force", "Trap", 0, 0, 0, "Destroy all attack position monsters your opponent controls.")
    
 };
+#endif
