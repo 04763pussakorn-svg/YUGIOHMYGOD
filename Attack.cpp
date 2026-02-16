@@ -14,7 +14,8 @@ public:
     void summon(string, int);     
     void equipSpell();          
     void declareAttack(DuelMonster *); 
-    void battleCalculation(int);       
+    void battleCalculation(int);
+    string getName() {return name;}     
 };
 
 void DuelMonster::showCardInfo() {
@@ -41,18 +42,21 @@ void DuelMonster::equipSpell() {
     cout << ">> ATK and DEF increased by 500 points!\n";
     atk += 500;
     def += 500;
+
+    if(power == atk - 500) power = atk;
+    else if(power == def - 500) power = def;
     showCardInfo();
 }
 
 void DuelMonster::declareAttack(DuelMonster *target) {
-    cout << "\n>> Battle! '" << name << "' attacks with " << name << " Burst Stream!!\n";
+    cout << "\n>> Battle! '" << name << "' attacks '" << target->getName() << "'\n";
     target->battleCalculation(power);
 }
 
 void DuelMonster::battleCalculation(int opp_power) {
     int damage = opp_power - power;
 
-    if(damage < 0)  cout << ">> '" << name << "' is destroyed and sent to the Graveyard!\n";//here
+    if(damage > 0)  cout << ">> '" << name << "' is destroyed and sent to the Graveyard!\n";//here
 }
 
 int main() {
