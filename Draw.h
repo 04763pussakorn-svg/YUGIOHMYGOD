@@ -6,29 +6,38 @@
 using namespace std;
 
 class Card {
-    public:
-    string cn;
+public:
+    string name;
+    string type;
+    int stars;
     int atk;
     int def;
-};
+    string effect;
+    int status;
 
-Card draw(vector<Card> &deck){
+    Card(string n, string t, int s, int a, int d, string e) 
+        : name(n), type(t), stars(s), atk(a), def(d), effect(e), status(0) {}
+
+    void show() {
+        if(type == "Monster") cout << "\033[38;5;94m";
+        else if(type == "Spell") cout << "\033[0;32m";
+        else if(type == "Trap") cout << "\033[0;35m";
+
+        cout << "\n====================\n";
+        cout << "Name  : " << name << endl;
+        cout << "Type  : " << type << endl;
+        cout << "Stars : " << stars << endl;
+        cout << "ATK   : " << atk << endl;
+        cout << "DEF   : " << def << endl;
+        cout << "Effect: " << effect << endl;
+        cout << "====================\n";
+        cout << "\033[0m";
+}
+};
+Card draw(vector<Card> &deck) {
     int x = rand() % deck.size(); 
     Card mons = deck[x];
-    deck.erase(deck.begin() + x);
+    // deck.erase(deck.begin() + x);
     return mons;
 }
 
-int main(){
-    srand(time(0));
-    vector<Card> card = {};
-    for(int i = 0; i < 2; i++){
-        Card mons = draw(card);
-        cout << "[ " << mons.cn << "," << mons.atk << "," << mons.def <<  " ] " ;
-    }
-    cout << "\n";
-    for (int i = 0; i < card.size(); i++) {
-        cout << "[ " << card[i].cn << "," << card[i].atk << "," << card[i].def << "] ";
-    }
-    return 0;
-}
