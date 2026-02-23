@@ -1,6 +1,6 @@
 #ifndef ATTACK_H
 #define ATTACK_H
-#include "class.h"
+#include "Draw.h"
 
 class DuelMonster {
     string name;
@@ -64,7 +64,7 @@ void DuelMonster::battleCalculation(int atker_power) {
     if(damage > 0)  cout << ">> '" << name << "' is destroyed and sent to the Graveyard!\n";// name of target
 }
 
-void turn(Card a,Card b) {
+void Action(Card a,Card b) {
     DuelMonster *cards = new DuelMonster[2];
 
     cards[0].summon(a.name, 1, a.atk , a.def);
