@@ -1,3 +1,6 @@
+#ifndef DRAW_H
+#define DRAW_H
+
 #include <iostream>
 #include <vector>
 #include <string>
@@ -40,4 +43,4 @@ Card draw(vector<Card> &deck) {
     // deck.erase(deck.begin() + x);
     return mons;
 }
-
+#endif
