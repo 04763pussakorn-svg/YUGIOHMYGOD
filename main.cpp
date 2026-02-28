@@ -28,7 +28,6 @@ int main(){
         Card("Mirror Force", "Trap", 0, 0, 0, "Destroy all attack position monsters.")
     };
 
-
 Action(deck1[2],deck1[3]);
     cout << endl;
     return 0;
