@@ -16,6 +16,7 @@ public:
     int def;
     string effect;
     int status;
+    int power;
 
     Card(string n, string t, int s, int a, int d, string e) 
         : name(n), type(t), stars(s), atk(a), def(d), effect(e), status(0) {}
