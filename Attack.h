@@ -74,7 +74,7 @@ void Action(Card a,Card b) {
     cards[1].equipSpell(); 
     cards[0].declareAttack(&cards[1]);
 
-    delete [] cards;
+    delete [] cards;//test
 
 }
 #endif 
