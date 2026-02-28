@@ -1,3 +1,5 @@
+#ifndef DRAW_H
+#define DRAW_H
 #include <iostream>
 #include <vector>
 #include <string>
@@ -33,11 +35,17 @@ public:
         cout << "====================\n";
         cout << "\033[0m";
 }
+    void summon(string, int, int , int);     
+    void equipSpell();          
+    void declareAttack(Card *); 
+    void battleCalculation(int);
+    string getName() {return name;}     
 };
 Card draw(vector<Card> &deck) {
     int x = rand() % deck.size(); 
     Card mons = deck[x];
-    // deck.erase(deck.begin() + x);
+    deck.erase(deck.begin() + x);
     return mons;
 }
 
+#endif
