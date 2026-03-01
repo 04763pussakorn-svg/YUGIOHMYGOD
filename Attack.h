@@ -101,6 +101,6 @@ inline void Action(Card a, Card b) {
     // Yugi สั่ง a โจมตีใส่ b ของ Kaiba
     a.declareAttack(&b, yugi, kaiba);
 
-    cout << "\n--- END OF BATTLE ---\n";
+    cout << "\n--- END OF BATTLE ---\n";//last
 }
 #endif 
