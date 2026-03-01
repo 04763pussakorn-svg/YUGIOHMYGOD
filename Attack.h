@@ -98,7 +98,7 @@ inline void Card::battleCalculation(Card *attacker_card, Player &attacker, Playe
 }
 
 inline void Action(Card a, Card b) {
-    // สร้างผู้เล่น 2 คน
+
     Player yugi("Yugi");
     Player kaiba("Kaiba");
 

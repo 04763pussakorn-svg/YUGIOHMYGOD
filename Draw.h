@@ -16,6 +16,7 @@ public:
 
 class Card{
 public:
+    int id;
     string name;
     string type;
     int stars;
@@ -25,7 +26,6 @@ public:
     int status;
     int power;
 
-    Card() : name(""), type(""), stars(0), atk(0), def(0), effect(""), status(0), power(0) {}
     Card(string n, string t, int s, int a, int d, string e) 
         : name(n), type(t), stars(s), atk(a), def(d), effect(e), status(0) {}
 
@@ -35,6 +35,7 @@ public:
         else if(type == "Trap") cout << "\033[0;35m";
 
         cout << "\n====================\n";
+        cout << "ID    : " << id << endl;
         cout << "Name  : " << name << endl;
         cout << "Type  : " << type << endl;
         cout << "Stars : " << stars << endl;

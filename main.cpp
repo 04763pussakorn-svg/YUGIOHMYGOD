@@ -1,5 +1,16 @@
 #include "Draw.h"
 #include "Attack.h"
+
+// int main() {
+  
+//         updateScreen();
+//         Sleep(500);
+
+    
+//     cout << "Game End";
+    
+//     return 0;  
+// }
 int main(){
     srand(time(0));
     vector<Card> deck1 = {
