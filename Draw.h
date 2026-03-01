@@ -45,7 +45,7 @@ public:
         cout << "\033[0m";
 }   
     void showCardInfo();
-    void summon(string, int, int , int);     
+    void summon(Player &player, int);     
     void equipSpell();          
     void declareAttack(Card *target, Player &attacker, Player &defender); 
     void battleCalculation(Card *attacker_card, Player &attacker, Player &defender);
@@ -58,5 +58,5 @@ inline Card draw(vector<Card> &deck) {
     deck.erase(deck.begin() + x);
     return mons;
 }
-//last
+
 #endif

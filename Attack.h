@@ -22,13 +22,24 @@ inline void Card::showCardInfo() {
          << " | ATK: " << atk << " | DEF: " << def << endl;
 }
 
-inline void Card::summon(string n, int t, int atk_input, int def_input) {
-    name = n; atk = atk_input; def = def_input; status = t; 
+// inline void Card::summon(string n, int t, int atk_input, int def_input) {
+//     name = n; atk = atk_input; def = def_input; status = t; 
+//     power = (status == 1) ? atk : def;
+//     string statusStr = (status == 1) ? "Attack" : "Defend";
+
+//     cout << ">> " player.name <<  " summon '" << name << "' in " << statusStr << " Position!!!\n";
+//     showCardInfo();
+// }
+
+inline void Card::summon(Player &player, int t) {
+    status = t; 
     power = (status == 1) ? atk : def;
     string statusStr = (status == 1) ? "Attack" : "Defend";
 
-    cout << ">> I summon '" << name << "' in " << statusStr << " Position!!!\n";
+    cout << "--------------------------------------------------\n";
+    cout << ">> " << player.name << " summons '" << name << "' in " << statusStr << " Position!!!\n";
     showCardInfo();
+    cout << "--------------------------------------------------\n";
 }
 
 inline void Card::equipSpell() {
@@ -93,14 +104,14 @@ inline void Action(Card a, Card b) {
 
     cout << "\n--- DUEL START! " << yugi.name << " (LP: " << yugi.lp << ") VS " << kaiba.name << " (LP: " << kaiba.lp << ") ---\n\n";
 
-    a.summon(a.name, 1, a.atk, a.def); // โจมตี
-    cout << "--------------------------------------------------\n";
-    b.summon(b.name, 0, b.atk, b.def); // ป้องกัน
-    cout << "--------------------------------------------------\n";
+    a.summon(yugi,1); 
+
+    b.summon(kaiba,1); 
+
 
     // Yugi สั่ง a โจมตีใส่ b ของ Kaiba
     a.declareAttack(&b, yugi, kaiba);
 
-    cout << "\n--- END OF BATTLE ---\n";//last
+    cout << "\n--- END OF BATTLE ---\n";
 }
 #endif 
