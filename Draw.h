@@ -7,6 +7,13 @@
 #include <ctime>
 using namespace std;
 
+class Player {
+public:
+    string name;
+    int lp;
+    Player(string n){name = n; lp = 4000;}
+};
+
 class Card{
 public:
     int id;
@@ -19,8 +26,8 @@ public:
     int status;
     int power;
 
-    Card(int id, string n, string t, int s, int a, int d, string e) 
-        : id(id), name(n), type(t), stars(s), atk(a), def(d), effect(e), status(0) {}
+    Card(string n, string t, int s, int a, int d, string e) 
+        : name(n), type(t), stars(s), atk(a), def(d), effect(e), status(0) {}
 
     void show() {
         if(type == "Monster") cout << "\033[38;5;94m";
@@ -41,16 +48,16 @@ public:
     void showCardInfo();
     void summon(string, int, int , int);     
     void equipSpell();          
-    void declareAttack(Card *); 
-    void battleCalculation(int);
+    void declareAttack(Card *target, Player &attacker, Player &defender); 
+    void battleCalculation(Card *attacker_card, Player &attacker, Player &defender);
     string getName() {return name;}     
     
 };
-Card draw(vector<Card> &deck) {
+inline Card draw(vector<Card> &deck) {
     int x = rand() % deck.size(); 
     Card mons = deck[x];
     deck.erase(deck.begin() + x);
     return mons;
 }
-
+//last
 #endif
