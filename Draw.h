@@ -9,6 +9,7 @@ using namespace std;
 
 class Card{
 public:
+    int id;
     string name;
     string type;
     int stars;
@@ -18,8 +19,8 @@ public:
     int status;
     int power;
 
-    Card(string n, string t, int s, int a, int d, string e) 
-        : name(n), type(t), stars(s), atk(a), def(d), effect(e), status(0) {}
+    Card(int id, string n, string t, int s, int a, int d, string e) 
+        : id(id), name(n), type(t), stars(s), atk(a), def(d), effect(e), status(0) {}
 
     void show() {
         if(type == "Monster") cout << "\033[38;5;94m";
@@ -27,6 +28,7 @@ public:
         else if(type == "Trap") cout << "\033[0;35m";
 
         cout << "\n====================\n";
+        cout << "ID    : " << id << endl;
         cout << "Name  : " << name << endl;
         cout << "Type  : " << type << endl;
         cout << "Stars : " << stars << endl;
