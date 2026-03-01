@@ -1,29 +1,27 @@
 #ifndef ATTACK_H
 #define ATTACK_H
 #include "Draw.h"
+// class Card {
+//     string name;
+//     int atk;     
+//     int def;
+//     int power;     
+//     void showCardInfo();
 
-class DuelMonster {
-    string name;
-    int atk;     
-    int def;
-    int power;     
-    
-    void showCardInfo();
+// public:
+//     void summon(string, int, int , int);     
+//     void equipSpell();          
+//     void declareAttack(Card *); 
+//     void battleCalculation(int);
+//     string getName() {return name;}     
+// };
 
-public:
-    void summon(string, int, int , int);     
-    void equipSpell();          
-    void declareAttack(DuelMonster *); 
-    void battleCalculation(int);
-    string getName() {return name;}     
-};
-
-void DuelMonster::showCardInfo() {
+void Card::showCardInfo() {
     cout << "[" << name << "]\t" 
          << " | ATK: " << atk << " | DEF: " << def << endl;
 }
 
-void DuelMonster::summon(string n, int t, int atk_input, int def_input) {
+void Card::summon(string n, int t, int atk_input, int def_input) {
     string status;
     name = n;
     atk = atk_input;
@@ -35,14 +33,13 @@ void DuelMonster::summon(string n, int t, int atk_input, int def_input) {
     if (t == 1)status = "Attack";
     else status = "Defend";
 
-    cout << power;
     cout << "--------------------------------------------------\n";
     cout << ">> I summon '" << name << "' in " << status << " Position!!!\n";
     showCardInfo();
     cout << "--------------------------------------------------\n";
 }
 
-void DuelMonster::equipSpell() {
+void Card::equipSpell() {
     cout << ">> I activate an Equip Spell Card on '" << name << "'!\n";
     cout << ">> ATK and DEF increased by 500 points!\n";
     atk += 500;
@@ -53,19 +50,19 @@ void DuelMonster::equipSpell() {
     showCardInfo();
 }
 
-void DuelMonster::declareAttack(DuelMonster *target) {
+void Card::declareAttack(Card *target) {
     cout << "\n>> Battle! '" << name << "' attacks '" << target->getName() << "'\n";
     target->battleCalculation(power);
 }
 
-void DuelMonster::battleCalculation(int atker_power) {
+void Card::battleCalculation(int atker_power) {
     int damage = atker_power - power; // power ของ target
 
     if(damage > 0)  cout << ">> '" << name << "' is destroyed and sent to the Graveyard!\n";// name of target
 }
 
 void Action(Card a,Card b) {
-    DuelMonster *cards = new DuelMonster[2];
+    Card *cards = new Card[2];
 
     cards[0].summon(a.name, 1, a.atk , a.def);
     cards[1].summon(b.name, 1, b.atk , b.def);
@@ -74,7 +71,7 @@ void Action(Card a,Card b) {
     cards[1].equipSpell(); 
     cards[0].declareAttack(&cards[1]);
 
-    delete [] cards;//test
+    delete [] cards;
 
 }
 #endif 
