@@ -98,7 +98,6 @@ inline void Card::battleCalculation(Card *attacker_card, Player &attacker, Playe
 }
 
 inline void Action(Card a, Card b) {
-
     Player yugi("Yugi");
     Player kaiba("Kaiba");
 

@@ -59,5 +59,5 @@ inline Card draw(vector<Card> &deck) {
     deck.erase(deck.begin() + x);
     return mons;
 }
-//
+
 #endif
