@@ -108,8 +108,6 @@ inline void Action(Card a, Card b) {
 
     b.summon(kaiba,1); 
 
-
-    // Yugi สั่ง a โจมตีใส่ b ของ Kaiba
     a.declareAttack(&b, yugi, kaiba);
 
     cout << "\n--- END OF BATTLE ---\n";

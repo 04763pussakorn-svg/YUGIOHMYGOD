@@ -1,4 +1,4 @@
-#include "draw.h"
+#include "Draw.h"
 #include "Attack.h"
 int main(){
     srand(time(0));
@@ -28,7 +28,7 @@ int main(){
         Card("Mirror Force", "Trap", 0, 0, 0, "Destroy all attack position monsters.")
     };
 
-Action(deck1[2],deck1[3]);
+Action(deck1[3],deck1[2]);
     cout << endl;
     return 0;
 }  
