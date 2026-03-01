@@ -62,16 +62,13 @@ void Card::battleCalculation(int atker_power) {
 }
 
 void Action(Card a,Card b) {
-    Card *cards = new Card[2];
 
-    cards[0].summon(a.name, 1, a.atk , a.def);
-    cards[1].summon(b.name, 1, b.atk , b.def);
-    cards[0].equipSpell(); 
-    cards[0].equipSpell();
-    cards[1].equipSpell(); 
-    cards[0].declareAttack(&cards[1]);
-
-    delete [] cards;
+    a.summon(a.name, 1, a.atk , a.def);
+    b.summon(b.name, 1, b.atk , b.def);
+    a.equipSpell(); 
+    a.equipSpell();
+    b.equipSpell();
+    a.declareAttack(&b);
 
 }
 #endif 
