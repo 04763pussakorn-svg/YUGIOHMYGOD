@@ -1,6 +1,5 @@
 #ifndef DRAW_H
 #define DRAW_H
-
 #include <iostream>
 #include <vector>
 #include <string>
@@ -17,6 +16,7 @@ public:
     int def;
     string effect;
     int status;
+    int power;
 
     Card(string n, string t, int s, int a, int d, string e) 
         : name(n), type(t), stars(s), atk(a), def(d), effect(e), status(0) {}
@@ -36,11 +36,17 @@ public:
         cout << "====================\n";
         cout << "\033[0m";
 }
+    void summon(string, int, int , int);     
+    void equipSpell();          
+    void declareAttack(Card *); 
+    void battleCalculation(int);
+    string getName() {return name;}     
 };
 Card draw(vector<Card> &deck) {
     int x = rand() % deck.size(); 
     Card mons = deck[x];
-    // deck.erase(deck.begin() + x);
+    deck.erase(deck.begin() + x);
     return mons;
 }
+
 #endif
