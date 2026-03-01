@@ -1,0 +1,80 @@
+#ifndef ATTACK_H
+#define ATTACK_H
+#include "Draw.h"
+
+class DuelMonster {
+    string name;
+    int atk;     
+    int def;
+    int power;     
+    
+    void showCardInfo();
+
+public:
+    void summon(string, int, int , int);     
+    void equipSpell();          
+    void declareAttack(DuelMonster *); 
+    void battleCalculation(int);
+    string getName() {return name;}     
+};
+
+void DuelMonster::showCardInfo() {
+    cout << "[" << name << "]\t" 
+         << " | ATK: " << atk << " | DEF: " << def << endl;
+}
+
+void DuelMonster::summon(string n, int t, int atk_input, int def_input) {
+    string status;
+    name = n;
+    atk = atk_input;
+    def = def_input;
+
+    if (t == 1) power = atk;
+    else power = def;
+
+    if (t == 1)status = "Attack";
+    else status = "Defend";
+
+    cout << power;
+    cout << "--------------------------------------------------\n";
+    cout << ">> I summon '" << name << "' in " << status << " Position!!!\n";
+    showCardInfo();
+    cout << "--------------------------------------------------\n";
+}
+
+void DuelMonster::equipSpell() {
+    cout << ">> I activate an Equip Spell Card on '" << name << "'!\n";
+    cout << ">> ATK and DEF increased by 500 points!\n";
+    atk += 500;
+    def += 500;
+
+    if(power == atk - 500) power = atk;
+    else if(power == def - 500) power = def;
+    showCardInfo();
+}
+
+void DuelMonster::declareAttack(DuelMonster *target) {
+    cout << "\n>> Battle! '" << name << "' attacks '" << target->getName() << "'\n";
+    target->battleCalculation(power);
+}
+
+void DuelMonster::battleCalculation(int atker_power) {
+    int damage = atker_power - power; // power ของ target
+
+    if(damage > 0)  cout << ">> '" << name << "' is destroyed and sent to the Graveyard!\n";// name of target
+}
+
+void Action(Card a,Card b) {
+    DuelMonster *cards = new DuelMonster[2];
+
+    cards[0].summon(a.name, 1, a.atk , a.def);
+    cards[1].summon(b.name, 1, b.atk , b.def);
+    cards[0].equipSpell(); 
+    cards[0].equipSpell();
+    cards[1].equipSpell(); 
+    cards[0].declareAttack(&cards[1]);
+
+    delete [] cards;
+
+}
+#endif 
