@@ -7,7 +7,7 @@
 #include <ctime>
 using namespace std;
 
-class Card {
+class Card{
 public:
     string name;
     string type;
@@ -35,12 +35,14 @@ public:
         cout << "Effect: " << effect << endl;
         cout << "====================\n";
         cout << "\033[0m";
-}
+}   
+    void showCardInfo();
     void summon(string, int, int , int);     
     void equipSpell();          
     void declareAttack(Card *); 
     void battleCalculation(int);
     string getName() {return name;}     
+    
 };
 Card draw(vector<Card> &deck) {
     int x = rand() % deck.size(); 
