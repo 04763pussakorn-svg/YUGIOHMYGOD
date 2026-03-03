@@ -1,4 +1,4 @@
-#ifndef ATTACK_H
+#ifndef ATTACK_H //it's not just attack it's action
 #define ATTACK_H
 #include "Draw.h"
 //#include "System.h"
@@ -53,11 +53,6 @@ inline void Card::equipSpell() {
     showCardInfo();
 }
 
-// void Card::declareAttack(Card *target) {
-//     cout << "\n>> Battle! '" << name << "' attacks '" << target->getName() << "'\n";
-//     target->battleCalculation(power);
-// }
-
 inline void Card::declareAttack(Card *target, Player &attacker, Player &defender) {
     cout << "\n>> Battle! " << attacker.name << "'s '" << name << "' attacks " << defender.name << "'s '" << target->getName() << "'!\n";
     target->battleCalculation(this, attacker, defender); 
@@ -72,14 +67,17 @@ inline void Card::battleCalculation(Card *attacker_card, Player &attacker, Playe
             cout << ">> '" << this->name << "' is destroyed!\n";
             defender.lp -= damage; // หัก LP ของผู้ตั้งรับ
             cout << ">> " << defender.name << " takes " << damage << " damage! (LP Left: " << defender.lp << ")\n";
+            this->power = -1;
         } 
         else if (damage < 0) {
             cout << ">> '" << attacker_card->name << "' is destroyed!\n";
             attacker.lp -= (-damage); // หัก LP ของผู้โจมตี
             cout << ">> " << attacker.name << " takes " << -damage << " damage! (LP Left: " << attacker.lp << ")\n";
+            attacker_card->power = -1;
         } 
         else {
             cout << ">> Both monsters are destroyed!\n";
+            this->power = -1; attacker_card->power = -1;
         }
     } 
     //(Defense Position)
@@ -95,6 +93,10 @@ inline void Card::battleCalculation(Card *attacker_card, Player &attacker, Playe
             cout << ">> No monsters are destroyed.\n";
         }
     }
+}
+inline bool Card::isDes(){
+    if (power = -1) return true;
+    else return false; 
 }
 
 inline void Action(Card a, Card b) {

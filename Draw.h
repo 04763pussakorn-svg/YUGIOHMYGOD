@@ -1,4 +1,4 @@
-#ifndef DRAW_H
+#ifndef DRAW_H //+ class + function 
 #define DRAW_H
 #include <iostream>
 #include <vector>
@@ -52,7 +52,8 @@ public:
     void equipSpell();          
     void declareAttack(Card *target, Player &attacker, Player &defender); 
     void battleCalculation(Card *attacker_card, Player &attacker, Player &defender);
-    string getName() {return name;}     
+    string getName() {return name;}
+    bool isDes();     
     
 };
 inline Card draw(vector<Card> &deck) {
