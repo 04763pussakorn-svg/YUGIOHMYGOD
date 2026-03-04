@@ -6,6 +6,7 @@
 #include <iostream>
 #include <algorithm> 
 #include <random>    
+#include <ctime>
 using namespace std;
 
 class GameManager {
@@ -154,14 +155,13 @@ private:
         drawCard(playerIndex, 1);
     }
 
-//ยังไม่ได้ล็อคให้อัญเชิญได้เทิร์นละ 1 ใบเดี๋ยวอัพเดตให้ 
-
     void playerMainPhase() {
         cout << "\n[ Phase: MAIN PHASE 1 ]\n";
         bool endPhase = false;
-        
+        bool hasSummoned = false;
         while (!endPhase) {
-            showPlayerHand(); // แสดงไพ่บนมือแบบย่อ
+
+            showPlayerHand();
             
             cout << "\nOptions:\n";
             if (!hand[0].empty()) cout << "[1-" << hand[0].size() << "] Select a card to Check Info & Play\n";
@@ -179,8 +179,9 @@ private:
                 int cardIndex = choice - 1;
                 Card selectedCard = hand[0][cardIndex];
                 selectedCard.show(); 
+
                 // --- กรณีเป็นการ์ดมอนสเตอร์ ---
-                if (selectedCard.type == "Monster") {
+                if (selectedCard.type == "Monster" && !hasSummoned) {
                     cout << "\nWhat would you like to do with this monster?\n";
                     if (monsterZone[0].size() >= 5) {
                         cout << "\033[31m[!] Your Monster Zone is full! You can only Cancel.\033[0m\n";
@@ -205,7 +206,10 @@ private:
                         } else {
                             cout << "\n>> \033[38;5;94mYou Set a monster in face-down Defense Position.\033[0m\n";
                         }
+
+                        hasSummoned = true;
                     }
+
                 } 
                 // --- กรณีเป็นการ์ดเวทมนตร์หรือกับดัก ---
                 else {
@@ -245,12 +249,313 @@ private:
         }
     }
 
-    void playerBattlePhase() { /* รอรับคำสั่งโจมตีจากผู้เล่น */ }
+    void playerBattlePhase() {
+        cout << "\n[ Phase: BATTLE PHASE ]\n";
+        
+        // 1. เช็คก่อนว่ามีมอนสเตอร์หงายหน้าโจมตีไหม
+        bool hasAttackableMonster = false;
+        for (Card c : monsterZone[0]) {
+            if (c.status == 1) hasAttackableMonster = true; // status 1 = Attack Position
+        }
+        
+        if (!hasAttackableMonster) {
+            cout << "You have no monsters in Attack Position. Skipping Battle Phase...\n";
+            return;
+        }
 
-    void botMainPhase() { /* โลจิกสมองบอทในการเลือกลงการ์ด */ }
-    void botBattlePhase() { /* โลจิกสมองบอทในการประเมินความเสี่ยงและสั่งโจมตี */ }
+        // สร้าง Array จำว่าตัวไหนตีไปแล้วบ้าง (อ้างอิงตาม index ของ monsterZone[0])
+        vector<bool> hasAttacked(monsterZone[0].size(), false);
+        bool endPhase = false;
 
-    void endPhase(int playerIndex) { /* จบเทิร์น */ }
+        while (!endPhase) {
+            cout << "\n--- BATTLE MENU ---\n";
+            int attackableCount = 0;
+            
+            // แสดงมอนสเตอร์ที่สามารถสั่งโจมตีได้
+            for (int i = 0; i < monsterZone[0].size(); i++) {
+                if (monsterZone[0][i].status == 1 && !hasAttacked[i]) {
+                    cout << "[" << i + 1 << "] Attack with \033[38;5;94m" << monsterZone[0][i].name 
+                         << "\033[0m (ATK: " << monsterZone[0][i].atk << ")\n";
+                    attackableCount++;
+                }
+            }
+
+            if (attackableCount == 0) {
+                cout << "All your monsters have attacked!\n";
+                break; // จบเฟสอัตโนมัติถ้าตีครบทุกตัวแล้ว
+            }
+
+            cout << "[0] End Battle Phase\n";
+            cout << "Choose an attacker: ";
+            
+            int attackerChoice;
+            cin >> attackerChoice;
+
+            if (attackerChoice == 0) {
+                endPhase = true;
+                cout << "\nEnding Battle Phase...\n";
+            } 
+            else if (attackerChoice > 0 && attackerChoice <= monsterZone[0].size() && 
+                     monsterZone[0][attackerChoice - 1].status == 1 && !hasAttacked[attackerChoice - 1]) {
+                
+                int aIndex = attackerChoice - 1;
+                Card attacker = monsterZone[0][aIndex];
+                
+                // 2. เลือกว่าจะตีใคร
+                if (monsterZone[1].empty()) {
+                    // --- กรณี DIRECT ATTACK ---
+                    cout << "\n>> \033[38;5;94m" << attacker.name << "\033[0m attacks Bot directly!!!\n";
+                    LP[1] -= attacker.atk;
+                    cout << "\033[31mBot takes " << attacker.atk << " damage!\033[0m (Bot LP: " << LP[1] << ")\n";
+                    hasAttacked[aIndex] = true;
+                } 
+                else {
+                    // --- กรณีตีมอนสเตอร์บนสนาม ---
+                    cout << "\nBot's Monsters:\n";
+                    for (int j = 0; j < monsterZone[1].size(); j++) {
+                        if (monsterZone[1][j].status == 1) {
+                            cout << "[" << j + 1 << "] \033[38;5;94m" << monsterZone[1][j].name 
+                                 << "\033[0m (ATK: " << monsterZone[1][j].atk << ")\n";
+                        } else {
+                            cout << "[" << j + 1 << "] Face-down Defense Monster\n";
+                        }
+                    }
+                    cout << "[0] Cancel Attack\n";
+                    cout << "Choose target: ";
+                    
+                    int targetChoice;
+                    cin >> targetChoice;
+
+                    if (targetChoice > 0 && targetChoice <= monsterZone[1].size()) {
+                        int tIndex = targetChoice - 1;
+                        Card target = monsterZone[1][tIndex];
+                        hasAttacked[aIndex] = true; // ยืนยันการตี
+
+                        cout << "\n>> \033[38;5;94m" << attacker.name << "\033[0m attacks ";
+                        if (target.status == 1) cout << "\033[38;5;94m" << target.name << "\033[0m!\n";
+                        else cout << "the face-down monster! (It flips up: \033[38;5;94m" << target.name << "\033[0m - DEF: " << target.def << ")\n";
+
+                        // --- DAMAGE CALCULATION (การคำนวณความเสียหาย) ---
+                        
+                        // กรณี 1: ตีเป้าหมายที่ตั้งโจมตี (ATK vs ATK)
+                        if (target.status == 1) {
+                            if (attacker.atk > target.atk) {
+                                int damage = attacker.atk - target.atk;
+                                cout << "Bot's monster is DESTROYED! \033[31mBot takes " << damage << " damage!\033[0m\n";
+                                LP[1] -= damage;
+                                graveyard[1].push_back(target);
+                                monsterZone[1].erase(monsterZone[1].begin() + tIndex);
+                            } 
+                            else if (attacker.atk < target.atk) {
+                                int damage = target.atk - attacker.atk;
+                                cout << "Your attack failed! Your monster is DESTROYED! \033[31mYou take " << damage << " damage!\033[0m\n";
+                                LP[0] -= damage;
+                                graveyard[0].push_back(attacker);
+                                monsterZone[0].erase(monsterZone[0].begin() + aIndex);
+                                hasAttacked.erase(hasAttacked.begin() + aIndex); // ลบตัวที่ตายออกจากลิสต์จำ
+                            } 
+                            else {
+                                cout << "Both monsters have equal ATK! Both are DESTROYED!\n";
+                                graveyard[1].push_back(target);
+                                monsterZone[1].erase(monsterZone[1].begin() + tIndex);
+                                graveyard[0].push_back(attacker);
+                                monsterZone[0].erase(monsterZone[0].begin() + aIndex);
+                                hasAttacked.erase(hasAttacked.begin() + aIndex);
+                            }
+                        } 
+                        // กรณี 2: ตีเป้าหมายที่ตั้งป้องกัน (ATK vs DEF)
+                        else {
+                            if (attacker.atk > target.def) {
+                                cout << "Bot's monster is DESTROYED! (No damage to LP)\n";
+                                graveyard[1].push_back(target);
+                                monsterZone[1].erase(monsterZone[1].begin() + tIndex);
+                            } 
+                            else if (attacker.atk < target.def) {
+                                int damage = target.def - attacker.atk;
+                                cout << "Your monster couldn't break the defense! \033[31mYou take " << damage << " recoil damage!\033[0m\n";
+                                LP[0] -= damage;
+                            } 
+                            else {
+                                cout << "Your attack was stopped, but neither monster is destroyed.\n";
+                            }
+                        }
+                    } else if (targetChoice != 0) {
+                        cout << "\033[31m[!] Invalid target.\033[0m\n";
+                    }
+                }
+            } else {
+                cout << "\033[31m[!] Invalid choice or monster has already attacked.\033[0m\n";
+            }
+            
+            // อัปเดต LP ให้เห็นเสมอ
+            cout << "\n[ CURRENT LP ] You: " << LP[0] << " | Bot: " << LP[1] << "\n";
+            
+            // ถ้ามีคน LP หมด ให้จบเกมทันที
+            if (LP[0] <= 0 || LP[1] <= 0) break; 
+        }
+    }
+
+    void botMainPhase() {
+        cout << "\n[ Phase: BOT MAIN PHASE 1 ]\n";
+        cout << "Bot is thinking...\n";
+        
+        bool hasSummoned = false; // กติกา: ลงมอนสเตอร์ปกติได้เทิร์นละ 1 ตัว
+
+        // วนลูปเช็คไพ่บนมือบอท (วนจากหลังมาหน้า เพื่อให้ใช้คำสั่ง erase ได้ปลอดภัย)
+        for (int i = hand[1].size() - 1; i >= 0; i--) {
+            Card selectedCard = hand[1][i];
+
+            // --- ตรรกะการลงมอนสเตอร์ ---
+            if (selectedCard.type == "Monster" && !hasSummoned && monsterZone[1].size() < 5) {
+                
+                // สุ่มความลังเล: มีโอกาส 25% ที่บอทจะเก็บมอนสเตอร์ไว้บนมือเฉยๆ ไม่ยอมลง!
+                int hesitation = rand() % 100;
+                if (hesitation < 25) {
+                    // ข้ามไพ่ใบนี้ไปเลย
+                    continue; 
+                }
+
+                // สุ่มท่าทีการลงสนาม: ถ้า ATK เยอะ (>=1500) โอกาสหงายตีสูง แต่ถ้าป้องกันเยอะ หรือสุ่มได้เลขน้อย จะหมอบ
+                int playStyle = rand() % 100;
+                
+                if (selectedCard.atk >= 1500 && playStyle < 80) {
+                    // หงายหน้าโจมตี (80% สำหรับมอนสเตอร์โจมตีสูง)
+                    selectedCard.status = 1;
+                    monsterZone[1].push_back(selectedCard);
+                    cout << ">> \033[38;5;94mBot Summons a Monster in Face-up Attack Position!\033[0m\n";
+                    // บอทลงแบบหงายหน้า เราจึงให้โชว์ชื่อการ์ดด้วย
+                    cout << "   (It's " << selectedCard.name << " - ATK: " << selectedCard.atk << ")\n";
+                } else {
+                    // คว่ำหน้าป้องกัน
+                    selectedCard.status = 2;
+                    monsterZone[1].push_back(selectedCard);
+                    // บอทคว่ำไพ่ เราจะไม่ให้โชว์ชื่อไพ่ เพื่อความสมจริง!
+                    cout << ">> Bot Sets a Monster in face-down Defense Position.\n";
+                }
+                
+                hand[1].erase(hand[1].begin() + i);
+                hasSummoned = true; // บันทึกว่าเทิร์นนี้ลงมอนสเตอร์ไปแล้ว
+            }
+            
+            // --- ตรรกะการเล่นการ์ดเวทมนตร์/กับดัก ---
+            else if ((selectedCard.type == "Spell" || selectedCard.type == "Trap") && spellTrapZone[1].size() < 5) {
+                
+                int r = rand() % 100;
+                
+                // กับดักต้องหมอบเสมอ หรือ เวทมนตร์มีโอกาสถูกหมอบ 40% เพื่อหลอกผู้เล่น
+                if (selectedCard.type == "Trap" || r < 40) {
+                    selectedCard.status = 2;
+                    spellTrapZone[1].push_back(selectedCard);
+                    cout << ">> Bot Sets a card in the Spell/Trap Zone.\n";
+                    hand[1].erase(hand[1].begin() + i);
+                } 
+                // เวทมนตร์ มีโอกาส 60% ที่จะใช้งานเลย
+                else if (selectedCard.type == "Spell") {
+                    cout << ">> \033[0;32mBot Activates Spell Card: '" << selectedCard.name << "'!\033[0m\n";
+                    spellTrapZone[1].push_back(selectedCard);
+                    hand[1].erase(hand[1].begin() + i);
+                }
+            }
+        }
+        cout << "\nBot ends its Main Phase.\n";
+    }
+    void botBattlePhase() {
+        cout << "\n[ Phase: BOT BATTLE PHASE ]\n";
+        
+        // ถ้าบอทไม่มีมอนสเตอร์หงายหน้าโจมตีเลย ก็จบเฟส
+        bool canAttack = false;
+        for (Card c : monsterZone[1]) {
+            if (c.status == 1) canAttack = true; // status 1 คือ หงายหน้าโจมตี
+        }
+        if (!canAttack) {
+            cout << "Bot has no monsters able to attack.\n";
+            return;
+        }
+
+        // --- ระบบความกลัว (Fear System) ---
+        int botCourage = 100; // ความกล้าตั้งต้น 100%
+        
+        // เช็คไพ่หมอบของฝั่งผู้เล่น (index 0)
+        int playerSetCards = spellTrapZone[0].size();
+        if (playerSetCards > 0) {
+            cout << "Bot is looking closely at your face-down cards...\n";
+            // ความกล้าลดลง 30% ต่อการ์ดหมอบ 1 ใบของผู้เล่น
+            botCourage -= (playerSetCards * 30); 
+        }
+
+        // เริ่มสั่งมอนสเตอร์แต่ละตัวให้โจมตี
+        for (int i = 0; i < monsterZone[1].size(); i++) {
+            if (monsterZone[1][i].status == 1) { // ถ้ามอนสเตอร์ตัวนี้อยู่ในโหมดโจมตี
+                
+                // สุ่มทอยเต๋าใจดีสู้เสือ
+                int roll = rand() % 100;
+                
+                if (roll < botCourage) {
+                    cout << ">> Bot's \033[38;5;94m" << monsterZone[1][i].name << "\033[0m declares an ATTACK!\n";
+                    // TODO: ระบบคำนวณดาเมจตรงนี้
+                } else {
+                    cout << ">> Bot hesitates... \033[38;5;94m" << monsterZone[1][i].name << "\033[0m cancels its attack out of fear!\n";
+                }
+            }
+        }
+    }
+
+    void endPhase(int playerIndex) {
+        cout << "\n[ Phase: END PHASE ]\n";
+
+        // กฎ: ห้ามมีการ์ดบนมือเกิน 6 ใบในตอนจบเทิร์น
+        while (hand[playerIndex].size() > 6) {
+            if (playerIndex == 0) {
+                // --- กรณีเทิร์นของผู้เล่น ---
+                cout << "\033[31m[!] Hand size limit exceeded! You have " << hand[0].size() << " cards.\033[0m\n";
+                cout << "You must discard down to 6 cards.\n";
+                
+                showPlayerHand(); // แสดงไพ่ให้ผู้เล่นเลือกทิ้ง
+                
+                cout << "Choose a card to DISCARD (1-" << hand[0].size() << "): ";
+                int choice;
+                cin >> choice;
+
+                if (choice > 0 && choice <= hand[0].size()) {
+                    int discardIndex = choice - 1;
+                    cout << ">> You discarded \033[31m" << hand[0][discardIndex].name << "\033[0m to the Graveyard.\n";
+                    
+                    // นำไพ่ลงสุสาน (Graveyard)
+                    graveyard[0].push_back(hand[0][discardIndex]);
+                    
+                    // ลบไพ่ใบนั้นออกจากมือ
+                    hand[0].erase(hand[0].begin() + discardIndex);
+                } else {
+                    cout << "\033[31m[!] Invalid choice. You must pick a card to discard.\033[0m\n";
+                }
+
+            } else {
+                // --- กรณีเทิร์นของบอท ---
+                cout << "Bot's hand exceeds 6 cards. Bot must discard...\n";
+                
+                // บอทสุ่มทิ้งไพ่ 1 ใบ
+                int discardIndex = rand() % hand[1].size();
+                cout << ">> Bot discarded a card to the Graveyard.\n";
+                
+                graveyard[1].push_back(hand[1][discardIndex]);
+                hand[1].erase(hand[1].begin() + discardIndex);
+            }
+        }
+
+        // ประกาศจบเทิร์น
+        if (playerIndex == 0) {
+            cout << "\n=== END OF PLAYER 1'S TURN ===\n";
+        } else {
+            cout << "\n=== END OF BOT'S TURN ===\n";
+        }
+        
+        // หน่วงเวลาเล็กน้อย หรือรอให้ผู้เล่นกด Enter ก่อนเริ่มเทิร์นถัดไป เพื่อไม่ให้ข้อความรันเร็วจนอ่านไม่ทัน
+        if (playerIndex == 1) {
+            cout << "\nPress Enter to start your next turn...";
+            cin.ignore(); // ล้างบัฟเฟอร์
+            cin.get();    // รอรับค่า Enter
+        }
+    }
 
     void announceWinner() {
         if (LP[0] <= 0) cout << "\nYOU LOSE!!!\n";
