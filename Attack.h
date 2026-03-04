@@ -1,4 +1,4 @@
-#ifndef ATTACK_H
+#ifndef ATTACK_H //it's not just attack it's action
 #define ATTACK_H
 #include "Draw.h"
 //#include "System.h"
@@ -22,13 +22,24 @@ inline void Card::showCardInfo() {
          << " | ATK: " << atk << " | DEF: " << def << endl;
 }
 
-inline void Card::summon(string n, int t, int atk_input, int def_input) {
-    name = n; atk = atk_input; def = def_input; status = t; 
+// inline void Card::summon(string n, int t, int atk_input, int def_input) {
+//     name = n; atk = atk_input; def = def_input; status = t; 
+//     power = (status == 1) ? atk : def;
+//     string statusStr = (status == 1) ? "Attack" : "Defend";
+
+//     cout << ">> " player.name <<  " summon '" << name << "' in " << statusStr << " Position!!!\n";
+//     showCardInfo();
+// }
+
+inline void Card::summon(Player &player, int t) {
+    status = t; 
     power = (status == 1) ? atk : def;
     string statusStr = (status == 1) ? "Attack" : "Defend";
 
-    cout << ">> I summon '" << name << "' in " << statusStr << " Position!!!\n";
+    cout << "--------------------------------------------------\n";
+    cout << ">> " << player.name << " summons '" << name << "' in " << statusStr << " Position!!!\n";
     showCardInfo();
+    cout << "--------------------------------------------------\n";
 }
 
 inline void Card::equipSpell() {
@@ -41,11 +52,6 @@ inline void Card::equipSpell() {
     else if(power == def - 500) power = def;
     showCardInfo();
 }
-
-// void Card::declareAttack(Card *target) {
-//     cout << "\n>> Battle! '" << name << "' attacks '" << target->getName() << "'\n";
-//     target->battleCalculation(power);
-// }
 
 inline void Card::declareAttack(Card *target, Player &attacker, Player &defender) {
     cout << "\n>> Battle! " << attacker.name << "'s '" << name << "' attacks " << defender.name << "'s '" << target->getName() << "'!\n";
@@ -61,14 +67,17 @@ inline void Card::battleCalculation(Card *attacker_card, Player &attacker, Playe
             cout << ">> '" << this->name << "' is destroyed!\n";
             defender.lp -= damage; // หัก LP ของผู้ตั้งรับ
             cout << ">> " << defender.name << " takes " << damage << " damage! (LP Left: " << defender.lp << ")\n";
+            this->power = -1;
         } 
         else if (damage < 0) {
             cout << ">> '" << attacker_card->name << "' is destroyed!\n";
             attacker.lp -= (-damage); // หัก LP ของผู้โจมตี
             cout << ">> " << attacker.name << " takes " << -damage << " damage! (LP Left: " << attacker.lp << ")\n";
+            attacker_card->power = -1;
         } 
         else {
             cout << ">> Both monsters are destroyed!\n";
+            this->power = -1; attacker_card->power = -1;
         }
     } 
     //(Defense Position)
@@ -85,22 +94,23 @@ inline void Card::battleCalculation(Card *attacker_card, Player &attacker, Playe
         }
     }
 }
+inline bool Card::isDes(){
+    if (power = -1) return true;
+    else return false; 
+}
 
 inline void Action(Card a, Card b) {
-    // สร้างผู้เล่น 2 คน
     Player yugi("Yugi");
     Player kaiba("Kaiba");
 
     cout << "\n--- DUEL START! " << yugi.name << " (LP: " << yugi.lp << ") VS " << kaiba.name << " (LP: " << kaiba.lp << ") ---\n\n";
 
-    a.summon(a.name, 1, a.atk, a.def); // โจมตี
-    cout << "--------------------------------------------------\n";
-    b.summon(b.name, 0, b.atk, b.def); // ป้องกัน
-    cout << "--------------------------------------------------\n";
+    a.summon(yugi,1); 
 
-    // Yugi สั่ง a โจมตีใส่ b ของ Kaiba
+    b.summon(kaiba,1); 
+
     a.declareAttack(&b, yugi, kaiba);
 
-    cout << "\n--- END OF BATTLE ---\n";//last
+    cout << "\n--- END OF BATTLE ---\n";
 }
 #endif 
