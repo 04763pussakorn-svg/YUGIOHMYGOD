@@ -660,7 +660,7 @@ private:
 
     void announceWinner() {
         if (LP[0] <= 0) cout << "\nYOU LOSE!!!\n";
-        else if (LP[1] <= 0) cout << "\nYOU WIN!!!\n";
+        else if (LP[1] <= 0) cout << "\nYOU WIN!!!\n";//test
     }
 };
 
