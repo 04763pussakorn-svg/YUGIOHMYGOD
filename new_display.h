@@ -110,7 +110,6 @@ Card A2(2,"Hello World","Spell",5,1200,700,"heheh");
 
 
 
-
 // ----------------------FUNCTION DEFINITION-------------------------
 void Start(){
     createScreen();
