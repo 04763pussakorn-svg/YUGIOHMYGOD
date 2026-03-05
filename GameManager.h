@@ -530,14 +530,18 @@ private:
         }
 
         // เริ่มสั่งมอนสเตอร์แต่ละตัวให้โจมตี
-        for (int i = 0; i < monsterZone[1].size(); i++) {
+        for (int i = monsterZone[1].size() - 1; i >= 0; i--) {
             if (monsterZone[1][i].status == 1) { // ถ้ามอนสเตอร์ตัวนี้อยู่ในโหมดโจมตี
                 
-                // สุ่มทอยเต๋าใจดีสู้เสือ
                 int roll = rand() % 100;
                 
                 if (roll < botCourage) {
-                    cout << ">> Bot's \033[38;5;94m" << monsterZone[1][i].name << "\033[0m declares an ATTACK!\n";
+                    // ==========================================
+                    // 🚨 [แก้ Error ตรงนี้] ประกาศตัวแปร attacker ให้โค้ดรู้จัก
+                    Card attacker = monsterZone[1][i]; 
+                    // ==========================================
+
+                    cout << ">> Bot's \033[38;5;94m" << attacker.name << "\033[0m declares an ATTACK!\n";
 
                     // 🌟 [ระบบใหม่] ถามผู้เล่นก่อนเปิดกับดัก
                     bool trapActivated = false; 
@@ -562,13 +566,11 @@ private:
                                 break; // ทำงานใบเดียวพอ
                             } else {
                                 cout << ">> You chose to keep the Trap Card hidden.\n";
-                                // วนลูปเช็คใบต่อไปเผื่อมีกับดักใบอื่นที่เราอยากเปิดแทน
                             }
                         }
                     }
 
                     if (trapActivated) continue; // ข้ามดาเมจถ้าติดกับดัก
-                    // TODO: ระบบคำนวณดาเมจตรงนี้
                     
                     if (monsterZone[0].empty()) {
                         cout << ">> Bot attacks directly!\n";
@@ -579,7 +581,7 @@ private:
                         Card target = monsterZone[0][0]; 
                         cout << ">> Bot attacks your " << target.name << "!\n";
                         
-                        // 🌟 เรียกใช้ฟังก์ชันกลาง (สลับเอา LP[1] ขึ้นก่อน เพราะบอทเป็นคนตี)
+                        // เรียกใช้ฟังก์ชันกลาง 
                         int battleResult = executeBattle(attacker, target, LP[1], LP[0], "Bot", "You");
 
                         // เช็คผลลัพธ์ว่าใครตายบ้าง
@@ -592,7 +594,7 @@ private:
                             monsterZone[1].erase(monsterZone[1].begin() + i); // ลบตัวที่ i ของบอท
                         }
                     }
-                    }else {
+                } else {
                     cout << ">> Bot hesitates... \033[38;5;94m" << monsterZone[1][i].name << "\033[0m cancels its attack out of fear!\n";
                 }
             }
