@@ -90,6 +90,45 @@ public:
     }
 
 private:
+
+    // คืนค่า: 0 = ไม่มีใครตาย, 1 = เป้าหมาย(Target)ตาย, 2 = คนตี(Attacker)ตาย, 3 = ตายทั้งคู่
+    int executeBattle(Card attacker, Card target, int &attackerLP, int &defenderLP, string attackerOwner, string defenderOwner) {
+        
+        if (target.status == 1) { // ตีเป้าหมายตั้งโจมตี (ATK vs ATK)
+            if (attacker.atk > target.atk) {
+                int dmg = attacker.atk - target.atk;
+                cout << defenderOwner << "'s monster is DESTROYED! \033[31m" << defenderOwner << " takes " << dmg << " damage!\033[0m\n";
+                defenderLP -= dmg;
+                return 1; // เป้าหมายตาย
+            } 
+            else if (attacker.atk < target.atk) {
+                int dmg = target.atk - attacker.atk;
+                cout << attackerOwner << "'s attack failed! Monster is DESTROYED! \033[31m" << attackerOwner << " takes " << dmg << " damage!\033[0m\n";
+                attackerLP -= dmg;
+                return 2; // คนตีตาย
+            } 
+            else {
+                cout << "Both monsters have equal ATK! Both are DESTROYED!\n";
+                return 3; // ตายคู่
+            }
+        } 
+        else { // ตีเป้าหมายตั้งป้องกัน (ATK vs DEF)
+            if (attacker.atk > target.def) {
+                cout << defenderOwner << "'s defending monster is DESTROYED! (No damage to LP)\n";
+                return 1; // เป้าหมายตาย
+            } 
+            else if (attacker.atk < target.def) {
+                int dmg = target.def - attacker.atk;
+                cout << attackerOwner << " couldn't break the defense! \033[31m" << attackerOwner << " takes " << dmg << " recoil damage!\033[0m\n";
+                attackerLP -= dmg;
+                return 0; // รอดคู่
+            } 
+            else {
+                cout << "Attack stopped. No monsters destroyed.\n";
+                return 0; // รอดคู่
+            }
+        }
+    }
     // ฟังก์ชันแสดงไพ่บนมือของผู้เล่น พร้อมแยกสีตาม Draw.h
     void showPlayerHand() {
         cout << "\n======================================================\n";
@@ -306,17 +345,26 @@ private:
                 if (monsterZone[1].empty()) {
                     // --- กรณี DIRECT ATTACK ---
 
-                    bool trapActivated = false; //แทรกกับดัก
-                    for (int t = 0; t < spellTrapZone[1].size(); t++) {
-                        if (spellTrapZone[1][t].type == "Trap") {
-                            cout << "\n\033[0;31m[!] BOT ACTIVATED A TRAP CARD: " << spellTrapZone[1][t].name << "!\033[0m\n";
-                            spellTrapZone[1][t].spellEffect(this, 1); // 1 คือบอทเป็นคนใช้
-                            graveyard[1].push_back(spellTrapZone[1][t]);
-                            spellTrapZone[1].erase(spellTrapZone[1].begin() + t);
-                            trapActivated = true; break;
+                    bool trapActivated = false; 
+                        for (int t = 0; t < spellTrapZone[1].size(); t++) {
+                            if (spellTrapZone[1][t].type == "Trap") {
+                                
+                                // สุ่มความฉลาดของบอท (สมมติให้มีโอกาส 70% ที่จะยอมเปิดกับดัก)
+                                int botTrapDecision = rand() % 100;
+                                
+                                if (botTrapDecision < 70) {
+                                    cout << "\n\033[0;31m[!] BOT ACTIVATED A TRAP CARD: " << spellTrapZone[1][t].name << "!\033[0m\n";
+                                    spellTrapZone[1][t].spellEffect(this, 1); // 1 คือบอทเป็นคนใช้
+                                    graveyard[1].push_back(spellTrapZone[1][t]);
+                                    spellTrapZone[1].erase(spellTrapZone[1].begin() + t);
+                                    trapActivated = true; 
+                                    break;
+                                } else {
+                                    // บอทกั๊กกับดักไว้ ไม่ยอมเปิด (แต่เราจะไม่ cout บอกผู้เล่น ให้มันเป็นความลับ)
+                                }
+                            }
                         }
-                    }
-                    if (trapActivated) continue; // ข้ามดาเมจ
+                        if (trapActivated) continue; // ข้ามดาเมจ
 
                     cout << "\n>> \033[38;5;94m" << attacker.name << "\033[0m attacks Bot directly!!!\n";
                     LP[1] -= attacker.atk;
@@ -362,48 +410,19 @@ private:
                         else cout << "the face-down monster! (It flips up: \033[38;5;94m" << target.name << "\033[0m - DEF: " << target.def << ")\n";
 
                         // --- DAMAGE CALCULATION (การคำนวณความเสียหาย) ---
-                        
-                        // กรณี 1: ตีเป้าหมายที่ตั้งโจมตี (ATK vs ATK)
-                        if (target.status == 1) {
-                            if (attacker.atk > target.atk) {
-                                int damage = attacker.atk - target.atk;
-                                cout << "Bot's monster is DESTROYED! \033[31mBot takes " << damage << " damage!\033[0m\n";
-                                LP[1] -= damage;
-                                graveyard[1].push_back(target);
-                                monsterZone[1].erase(monsterZone[1].begin() + tIndex);
-                            } 
-                            else if (attacker.atk < target.atk) {
-                                int damage = target.atk - attacker.atk;
-                                cout << "Your attack failed! Your monster is DESTROYED! \033[31mYou take " << damage << " damage!\033[0m\n";
-                                LP[0] -= damage;
-                                graveyard[0].push_back(attacker);
-                                monsterZone[0].erase(monsterZone[0].begin() + aIndex);
-                                hasAttacked.erase(hasAttacked.begin() + aIndex); // ลบตัวที่ตายออกจากลิสต์จำ
-                            } 
-                            else {
-                                cout << "Both monsters have equal ATK! Both are DESTROYED!\n";
-                                graveyard[1].push_back(target);
-                                monsterZone[1].erase(monsterZone[1].begin() + tIndex);
-                                graveyard[0].push_back(attacker);
-                                monsterZone[0].erase(monsterZone[0].begin() + aIndex);
-                                hasAttacked.erase(hasAttacked.begin() + aIndex);
-                            }
-                        } 
-                        // กรณี 2: ตีเป้าหมายที่ตั้งป้องกัน (ATK vs DEF)
-                        else {
-                            if (attacker.atk > target.def) {
-                                cout << "Bot's monster is DESTROYED! (No damage to LP)\n";
-                                graveyard[1].push_back(target);
-                                monsterZone[1].erase(monsterZone[1].begin() + tIndex);
-                            } 
-                            else if (attacker.atk < target.def) {
-                                int damage = target.def - attacker.atk;
-                                cout << "Your monster couldn't break the defense! \033[31mYou take " << damage << " recoil damage!\033[0m\n";
-                                LP[0] -= damage;
-                            } 
-                            else {
-                                cout << "Your attack was stopped, but neither monster is destroyed.\n";
-                            }
+
+                        // โยนการ์ดและ LP ของทั้งสองฝั่งให้ฟังก์ชันกลางคำนวณ
+                        int battleResult = executeBattle(attacker, target, LP[0], LP[1], "You", "Bot");
+
+                        // เช็คผลลัพธ์ว่าใครตายบ้าง เพื่อลบออกจากกระดาน
+                        if (battleResult == 1 || battleResult == 3) { // ถ้าเป้าหมายตาย หรือตายคู่
+                            graveyard[1].push_back(target);
+                            monsterZone[1].erase(monsterZone[1].begin() + tIndex);
+                        }
+                        if (battleResult == 2 || battleResult == 3) { // ถ้าคนตีตาย หรือตายคู่
+                            graveyard[0].push_back(attacker);
+                            monsterZone[0].erase(monsterZone[0].begin() + aIndex);
+                            hasAttacked.erase(hasAttacked.begin() + aIndex); // ลบออกจากลิสต์จำด้วย
                         }
                     } else if (targetChoice != 0) {
                         cout << "\033[31m[!] Invalid target.\033[0m\n";
@@ -520,27 +539,59 @@ private:
                 if (roll < botCourage) {
                     cout << ">> Bot's \033[38;5;94m" << monsterZone[1][i].name << "\033[0m declares an ATTACK!\n";
 
-                    bool trapActivated = false; // ตัวแปรจำว่ามีกับดักทำงานไหม
-        
-                    // เช็คโซนเวท/กับดักของเรา (Index 0) ว่ามีการ์ดหมอบอยู่ไหม
-                     for (int t = 0; t < spellTrapZone[0].size(); t++) {
-            
-                    // ถ้าการ์ดใบนั้นคือ "Trap" ใช้
+                    // 🌟 [ระบบใหม่] ถามผู้เล่นก่อนเปิดกับดัก
+                    bool trapActivated = false; 
+                    for (int t = 0; t < spellTrapZone[0].size(); t++) {
                         if (spellTrapZone[0][t].type == "Trap") {
-                        spellTrapZone[0][t].spellEffect(this, 0); 
-                
-                        // กับดักใช้เสร็จแล้ว ต้องย้ายลงสุสาน
-                        graveyard[0].push_back(spellTrapZone[0][t]);
-                        spellTrapZone[0].erase(spellTrapZone[0].begin() + t);
-                        trapActivated = true; // บันทึกว่ากับดักทำงานสำเร็จแล้ว
-                        break; // เลิกลูป ให้กับดักทำงานแค่ใบเดียวพอ
-            }
-        }
-                    if (trapActivated) 
-            // ถ้ากับดักอย่าง Mirror Force ทำงาน มอนสเตอร์บอทจะถูกทำลายไปแล้ว
-            // การโจมตีครั้งนี้จึงต้อง "ถูกยกเลิก" 
-                    continue;
+                            // เกมหยุดชั่วคราวและถามเรา
+                            cout << "\n\033[0;35m[?] Bot is attacking! You have a face-down Trap Card: '" << spellTrapZone[0][t].name << "'\033[0m\n";
+                            cout << "Do you want to activate it?\n";
+                            cout << "[1] Yes, activate it!\n";
+                            cout << "[2] No, keep it face-down.\n";
+                            cout << "Choice: ";
+                            
+                            int trapChoice;
+                            cin >> trapChoice;
+
+                            if (trapChoice == 1) {
+                                cout << "\n\033[0;35m[!] YOU ACTIVATED A TRAP CARD: " << spellTrapZone[0][t].name << "!\033[0m\n";
+                                spellTrapZone[0][t].spellEffect(this, 0); 
+                                graveyard[0].push_back(spellTrapZone[0][t]);
+                                spellTrapZone[0].erase(spellTrapZone[0].begin() + t);
+                                trapActivated = true; 
+                                break; // ทำงานใบเดียวพอ
+                            } else {
+                                cout << ">> You chose to keep the Trap Card hidden.\n";
+                                // วนลูปเช็คใบต่อไปเผื่อมีกับดักใบอื่นที่เราอยากเปิดแทน
+                            }
+                        }
+                    }
+
+                    if (trapActivated) continue; // ข้ามดาเมจถ้าติดกับดัก
                     // TODO: ระบบคำนวณดาเมจตรงนี้
+                    
+                    if (monsterZone[0].empty()) {
+                        cout << ">> Bot attacks directly!\n";
+                        LP[0] -= attacker.atk;
+                        cout << "\033[31mYou take " << attacker.atk << " damage!\033[0m (Your LP: " << LP[0] << ")\n";
+                    } else {
+                        // บอทตีตัวแรกเสมอ
+                        Card target = monsterZone[0][0]; 
+                        cout << ">> Bot attacks your " << target.name << "!\n";
+                        
+                        // 🌟 เรียกใช้ฟังก์ชันกลาง (สลับเอา LP[1] ขึ้นก่อน เพราะบอทเป็นคนตี)
+                        int battleResult = executeBattle(attacker, target, LP[1], LP[0], "Bot", "You");
+
+                        // เช็คผลลัพธ์ว่าใครตายบ้าง
+                        if (battleResult == 1 || battleResult == 3) { // ถ้าเป้าหมาย (เรา) ตาย
+                            graveyard[0].push_back(target);
+                            monsterZone[0].erase(monsterZone[0].begin()); // ลบตัวแรกเสมอ (index 0)
+                        }
+                        if (battleResult == 2 || battleResult == 3) { // ถ้าคนตี (บอท) ตาย
+                            graveyard[1].push_back(attacker);
+                            monsterZone[1].erase(monsterZone[1].begin() + i); // ลบตัวที่ i ของบอท
+                        }
+                    }
                     }else {
                     cout << ">> Bot hesitates... \033[38;5;94m" << monsterZone[1][i].name << "\033[0m cancels its attack out of fear!\n";
                 }
