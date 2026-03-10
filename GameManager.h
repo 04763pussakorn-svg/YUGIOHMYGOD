@@ -1,5 +1,5 @@
 #ifndef GAMEMANAGER_H
-#define GAMEMANAGER_H
+#define GAMEMANAGER_H//cp
 
 #include <Windows.h> 
 #include "new_display.h" 
@@ -9,7 +9,7 @@
 #include <random>    
 #include <ctime>
 using namespace std;
-#include "Draw.h"
+#include "Show.h"
 
 class GameManager {
 public:
@@ -171,9 +171,10 @@ private:
 
     void playerMainPhase() {
         bool endPhase = false;
-        bool hasSummoned = false;
+        bool hasSummoned = false; // เช็คว่าเทิร์นนี้ลงมอนสเตอร์ไปหรือยัง
         while (!endPhase) {
             
+            // เรียกกราฟิกให้แสดงกระดานล่าสุด
             displayBoard();
             
             cout << "\n[ Phase: MAIN PHASE 1 ]\n";
@@ -196,11 +197,14 @@ private:
                 Card selectedCard = hand[0][cardIndex];
                 selectedCard.show(); 
 
+                // --- กรณีเลือกลงมอนสเตอร์ ---
                 if (selectedCard.type == "Monster" && !hasSummoned) {
                     cout << "\nWhat would you like to do with this monster?\n";
                     if (monsterZone[0].size() >= 5) {
                         cout << "\033[31m[!] Your Monster Zone is full! You can only Cancel.\033[0m\n";
                         cout << "[0] Cancel\n";
+                        int cancelChoice; cin >> cancelChoice;
+                        continue;
                     } else {
                         cout << "[1] Normal Summon (Face-up Attack)\n";
                         cout << "[2] Set (Face-down Defense)\n";
@@ -211,7 +215,40 @@ private:
                     int posChoice;
                     cin >> posChoice;
 
-                    if ((posChoice == 1 || posChoice == 2) && monsterZone[0].size() < 5) {
+                    if (posChoice == 1 || posChoice == 2) {
+                        // ---- ระบบสังเวยมอนสเตอร์ (Tribute Summon) ----
+                        int reqTribute = 0;
+                        if (selectedCard.stars == 5 || selectedCard.stars == 6) reqTribute = 1;
+                        else if (selectedCard.stars >= 7) reqTribute = 2;
+
+                        if (reqTribute > 0) {
+                            if (monsterZone[0].size() < reqTribute) {
+                                cout << "\033[31m[!] You don't have enough monsters to tribute! (Requires " << reqTribute << ")\033[0m\n";
+                                continue; // มอนสเตอร์บนสนามไม่พอ ให้ข้ามไปเลือกไพ่ใบอื่น
+                            }
+                            
+                            cout << "\n\033[33m>> Level " << selectedCard.stars << " monster requires " << reqTribute << " tribute(s).\033[0m\n";
+                            for (int t = 0; t < reqTribute; t++) {
+                                int tributeChoice;
+                                while (true) {
+                                    cout << "Select your monster on the field to tribute (1-" << monsterZone[0].size() << "): ";
+                                    cin >> tributeChoice;
+                                    if (tributeChoice >= 1 && tributeChoice <= monsterZone[0].size()) {
+                                        break;
+                                    }
+                                    cout << "\033[31m[!] Invalid choice. Try again.\033[0m\n";
+                                }
+                                int tIndex = tributeChoice - 1;
+                                
+                                // ย้ายมอนสเตอร์ที่สังเวยลงสุสาน
+                                graveyard[0].push_back(monsterZone[0][tIndex]);
+                                monsterZone[0].erase(monsterZone[0].begin() + tIndex);
+                                
+                                cout << ">> \033[31mMonster tributed!\033[0m\n";
+                            }
+                        }
+                        // ---------------------------------------------
+
                         selectedCard.status = posChoice; 
                         monsterZone[0].push_back(selectedCard); 
                         hand[0].erase(hand[0].begin() + cardIndex); 
@@ -223,15 +260,17 @@ private:
 
                 } 
                 else if (selectedCard.type == "Monster" && hasSummoned) {
-                    cout << "\033[31m[!] You have already Normal Summoned a monster this turn! You can only Cancel.\033[0m\n";
-                    cout << "[0] Cancel\n";
+                    cout << "\033[31m[!] You have already Normal Summoned/Set a monster this turn! You can only Cancel.\033[0m\n";
+                    int cancelChoice; cout << "[0] Cancel\nChoice: "; cin >> cancelChoice;
                 }
 
+                // --- กรณีเลือกใช้เวทมนตร์ หรือ กับดัก ---
                 else if (selectedCard.type == "Spell" || selectedCard.type == "Trap") {
                     cout << "\nWhat would you like to do with this card?\n";
                     if (spellTrapZone[0].size() >= 5) {
                         cout << "\033[31m[!] Your Spell/Trap Zone is full! You can only Cancel.\033[0m\n";
-                        cout << "[0] Cancel\n";
+                        int cancelChoice; cout << "[0] Cancel\nChoice: "; cin >> cancelChoice;
+                        continue;
                     } else {
                         if (selectedCard.type == "Spell") {
                             cout << "[1] Activate Spell (Face-up)\n";
@@ -246,14 +285,14 @@ private:
                     int posChoice;
                     cin >> posChoice;
 
-                    if (posChoice == 1 && selectedCard.type == "Spell" && spellTrapZone[0].size() < 5) {
+                    if (posChoice == 1 && selectedCard.type == "Spell") {
                         cout << "\n>> \033[0;32mYou Activated Spell Card: '" << selectedCard.name << "'!\033[0m\n";
                         selectedCard.status = 1;
                         selectedCard.spellEffect(this, 0);
-                        spellTrapZone[0].push_back(selectedCard); 
+                        graveyard[0].push_back(selectedCard); // <--- แก้ไขให้เวทมนตร์ใช้แล้วลงสุสาน
                         hand[0].erase(hand[0].begin() + cardIndex);
                     } 
-                    else if (posChoice == 2 && spellTrapZone[0].size() < 5) {
+                    else if (posChoice == 2) {
                         selectedCard.status = 2; 
                         spellTrapZone[0].push_back(selectedCard);
                         hand[0].erase(hand[0].begin() + cardIndex);
@@ -405,18 +444,39 @@ private:
         
         bool hasSummoned = false; 
 
+        // บอทเช็คการ์ดในมือจากหลังมาหน้า
         for (int i = hand[1].size() - 1; i >= 0; i--) {
             Card selectedCard = hand[1][i];
+            
+            // --- AI บอทลงมอนสเตอร์ ---
             if (selectedCard.type == "Monster" && !hasSummoned && monsterZone[1].size() < 5) {
                 int hesitation = rand() % 100;
-                if (hesitation < 25) continue; 
+                if (hesitation < 25) continue; // บอทลังเล แกล้งไม่ลงการ์ดใบนี้
+
+                // ---- ระบบสังเวยมอนสเตอร์ของบอท ----
+                int reqTribute = 0;
+                if (selectedCard.stars == 5 || selectedCard.stars == 6) reqTribute = 1;
+                else if (selectedCard.stars >= 7) reqTribute = 2;
+
+                if (reqTribute > 0) {
+                    if (monsterZone[1].size() < reqTribute) {
+                        continue; // บอทมีมอนสเตอร์ไม่พอสังเวย ข้ามไพ่ใบนี้ไปเลย
+                    }
+                    
+                    cout << "\n>> \033[33mBot tributes " << reqTribute << " monster(s)!\033[0m\n";
+                    for (int t = 0; t < reqTribute; t++) {
+                        // บอทสังเวยมอนสเตอร์ตัวแรกสุดบนสนามตัวเองเสมอ
+                        graveyard[1].push_back(monsterZone[1][0]);
+                        monsterZone[1].erase(monsterZone[1].begin());
+                    }
+                }
+                // ------------------------------------------------
 
                 int playStyle = rand() % 100;
                 if (selectedCard.atk >= 1500 && playStyle < 80) {
                     selectedCard.status = 1;
                     monsterZone[1].push_back(selectedCard);
                     cout << ">> \033[38;5;94mBot Summons a Monster in Face-up Attack Position!\033[0m\n";
-                    cout << "   (It's " << selectedCard.name << " - ATK: " << selectedCard.atk << ")\n";
                 } else {
                     selectedCard.status = 2;
                     monsterZone[1].push_back(selectedCard);
@@ -426,10 +486,11 @@ private:
                 hand[1].erase(hand[1].begin() + i);
                 hasSummoned = true; 
             }
+            // --- AI บอทใช้เวท/กับดัก ---
             else if ((selectedCard.type == "Spell" || selectedCard.type == "Trap") && spellTrapZone[1].size() < 5) {
                 int r = rand() % 100;
                 if (selectedCard.type == "Trap" || r < 40) {
-                    selectedCard.status = 2;
+                    selectedCard.status = 2; // หมอบการ์ด
                     spellTrapZone[1].push_back(selectedCard);
                     cout << ">> Bot Sets a card in the Spell/Trap Zone.\n";
                     hand[1].erase(hand[1].begin() + i);
@@ -438,7 +499,7 @@ private:
                     cout << ">> \033[0;32mBot Activates Spell Card: '" << selectedCard.name << "'!\033[0m\n";
                     selectedCard.status = 1;
                     selectedCard.spellEffect(this, 1);
-                    spellTrapZone[1].push_back(selectedCard);
+                    graveyard[1].push_back(selectedCard); // <--- แก้ไขให้เวทมนตร์บอทใช้แล้วลงสุสาน
                     hand[1].erase(hand[1].begin() + i);
                 }
             }
@@ -448,7 +509,7 @@ private:
 
     void botBattlePhase() {
         cout << "\n[ Phase: BOT BATTLE PHASE ]\n";
-        
+        displayBoard();
         bool canAttack = false;
         for (Card c : monsterZone[1]) {
             if (c.status == 1) canAttack = true; 
@@ -462,7 +523,7 @@ private:
         int playerSetCards = spellTrapZone[0].size();
         if (playerSetCards > 0) {
             cout << "Bot is looking closely at your face-down cards...\n";
-            botCourage -= (playerSetCards * 30); 
+            botCourage -= (playerSetCards * 20); 
         }
 
         for (int i = monsterZone[1].size() - 1; i >= 0; i--) {
@@ -491,7 +552,7 @@ private:
                                 graveyard[0].push_back(spellTrapZone[0][t]);
                                 spellTrapZone[0].erase(spellTrapZone[0].begin() + t);
                                 trapActivated = true; 
-                                break; 
+                                //break; 
                             } else {
                                 cout << ">> You chose to keep the Trap Card hidden.\n";
                             }
@@ -571,6 +632,7 @@ private:
         if (LP[0] <= 0) cout << "\nYOU LOSE!!!\n";
         else if (LP[1] <= 0) cout << "\nYOU WIN!!!\n";
     }
+    //Muhahaha
 };
 
 #endif
